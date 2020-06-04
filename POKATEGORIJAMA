@@ -1,0 +1,124 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.OleDb;
+using System.Windows.Forms.DataVisualization.Charting;
+
+namespace B13B14
+{
+    public partial class Po_kategorijama : Form
+    {
+        public Po_kategorijama()
+        {
+            InitializeComponent();
+        }
+        int b1, b2, b3;
+        private void Po_kategorijama_Load(object sender, EventArgs e)
+        {
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "SELECT * FROM KATEGORIJA ORDER BY Naziv ASC";
+            try
+            {
+                con.Open();
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read()) checkedListBox1.Items.Add(reader["Naziv"].ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string k1, k2, k3;
+            OleDbDataAdapter Da = new OleDbDataAdapter();
+            DataTable dt1 = new DataTable();
+            DataTable dt2 = new DataTable();
+            DataTable dt3 = new DataTable();
+            k1 = checkedListBox1.CheckedItems[0].ToString();
+            k2 = checkedListBox1.CheckedItems[1].ToString();
+            k3 = checkedListBox1.CheckedItems[2].ToString();
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("SELECT KATEGORIJA.Naziv as Ime, Count(KNJIGA.KategorijaID) AS Broj FROM KATEGORIJA INNER JOIN KNJIGA ON KATEGORIJA.KategorijaID = KNJIGA.KategorijaID WHERE KATEGORIJA.Naziv='{0}' GROUP BY KATEGORIJA.Naziv", k1);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("SELECT KATEGORIJA.Naziv as Ime, Count(KNJIGA.KategorijaID) AS Broj FROM KATEGORIJA INNER JOIN KNJIGA ON KATEGORIJA.KategorijaID = KNJIGA.KategorijaID WHERE KATEGORIJA.Naziv='{0}' GROUP BY KATEGORIJA.Naziv", k2);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt2);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("SELECT KATEGORIJA.Naziv as Ime, Count(KNJIGA.KategorijaID) AS Broj FROM KATEGORIJA INNER JOIN KNJIGA ON KATEGORIJA.KategorijaID = KNJIGA.KategorijaID WHERE KATEGORIJA.Naziv='{0}' GROUP BY KATEGORIJA.Naziv", k3);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt2);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            dt1.Merge(dt2);
+            dt1.Merge(dt3);
+            chart1.DataSource = dt1;
+            chart1.Series["Broj knjiga"].XValueMember = "Ime";
+            chart1.Series["Broj knjiga"].YValueMembers = "Broj";
+            chart1.ChartAreas[0].AxisX.LabelStyle.Angle = 90;
+            chart1.DataBind();
+        }
+    }
+}
