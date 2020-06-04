@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.OleDb;
+
+namespace B13B14
+{
+    public partial class Unos_knjiga : Form
+    {
+        int b;
+        public Unos_knjiga()
+        {
+            InitializeComponent();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Unos_knjiga_Load(object sender, EventArgs e)
+        {
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "SELECT * FROM KNJIGA";
+            try
+            {
+                con.Open();
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read()) comboBox1.Items.Add(reader["Naziv"].ToString());
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            //kategorija
+            cmd.Connection = con;
+            cmd.CommandText = "SELECT * FROM KATEGORIJA";
+            try
+            {
+                con.Open();
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read()) comboBox2.Items.Add(reader["Naziv"].ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            button1.Enabled = true;
+            button2.Enabled = false;
+            comboBox1.Enabled = true;
+            comboBox2.Enabled = true;
+            textBox1.Enabled = true;
+            textBox2.Enabled = true;
+            textBox3.Enabled = true;
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox3.Clear();
+            comboBox1.Text = "";
+            comboBox2.Text = "";
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            button1.Enabled = false;
+            button2.Enabled = true;
+            comboBox1.Enabled = false;
+            comboBox2.Enabled = false;
+            textBox1.Enabled = true;
+            textBox2.Enabled = false;
+            textBox3.Enabled = false;
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox3.Clear();
+            comboBox1.Text = "";
+            comboBox2.Text = "";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("SELECT KNJIGA.KnjigaID, KNJIGA.Naziv, KNJIGA.BrojStrana, KATEGORIJA.Naziv as ime, KNJIGA.Komentar FROM KATEGORIJA INNER JOIN KNJIGA ON KATEGORIJA.KategorijaID = KNJIGA.KategorijaID WHERE KNJIGA.KnjigaID ={0}", Convert.ToInt32(textBox1.Text));
+            try
+            {
+                con.Open();
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    comboBox1.Text = reader["Naziv"].ToString();
+                    textBox2.Text = reader["BrojStrana"].ToString();
+                    comboBox2.Text = reader["ime"].ToString();
+                    textBox3.Text = reader["Komentar"].ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("DELETE FROM KNJIGA WHERE KnjigaID={0}",Convert.ToInt32(textBox1.Text));
+            try
+            {
+                con.Open();
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Uspeno obrisana knjiga");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("SELECT * FROM KATEGORIJA WHERE Naziv='{0}'",comboBox2.SelectedItem);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    b = Convert.ToInt32(reader["KategorijaID"]);
+                }
+            con.Close();
+            cmd.Dispose();
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("INSERT INTO KNJIGA(KnjigaID,Naziv,BrojStrana,KategorijaID,Komentar) VALUES({0},'{1}',{2},{3},'{4}')", Convert.ToInt32(textBox1.Text), comboBox1.Text, Convert.ToInt32(textBox2.Text),b,textBox3.Text);
+            try
+            {
+                con.Open();
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Upisana knjiga");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+        }
+    }
+}
