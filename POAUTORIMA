@@ -1,0 +1,128 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.OleDb;
+
+namespace B13B14
+{
+    public partial class Po_autorima : Form
+    {
+        public Po_autorima()
+        {
+            InitializeComponent();
+        }
+
+        private void Po_autorima_Load(object sender, EventArgs e)
+        {
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+            cmd.CommandText = "SELECT * FROM AUTOR ORDER BY Ime,Prezime";
+            try
+            {
+                con.Open();
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read()) checkedListBox1.Items.Add(reader["Ime"].ToString()+" "+reader["Prezime"].ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string k1, k2, k3;
+            OleDbDataAdapter Da = new OleDbDataAdapter();
+            DataTable dt1 = new DataTable();
+            DataTable dt2 = new DataTable();
+            DataTable dt3 = new DataTable();
+            k1 = checkedListBox1.CheckedItems[0].ToString();
+            k2 = checkedListBox1.CheckedItems[1].ToString();
+            k3 = checkedListBox1.CheckedItems[2].ToString();
+            OleDbConnection con = new OleDbConnection();
+            con.ConnectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=B13B14.accdb";
+            OleDbCommand cmd = new OleDbCommand();
+            string ime1, prezime1;
+            ime1 = k1.Substring(0, k1.IndexOf(' '));
+            prezime1 = k1.Substring(k1.IndexOf(' ') + 1);
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("Select AUTOR.Ime, Count(AUTOR_IZDANJE.AutorID) As Broj FROM AUTOR, AUTOR_IZDANJE Where AUTOR.AutorID=AUTOR_IZDANJE.AutorID And AUTOR.Ime='{0}' And AUTOR.Prezime='{1}' Group By AUTOR.Ime",ime1,prezime1);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+
+            ime1 = k2.Substring(0, k2.IndexOf(' '));
+            prezime1 = k2.Substring(k2.IndexOf(' ') + 1);
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("Select AUTOR.Ime, Count(AUTOR_IZDANJE.AutorID) As Broj FROM AUTOR, AUTOR_IZDANJE Where AUTOR.AutorID=AUTOR_IZDANJE.AutorID And AUTOR.Ime='{0}' And AUTOR.Prezime='{1}' Group By AUTOR.Ime", ime1, prezime1);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt2);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+
+            ime1 = k3.Substring(0, k3.IndexOf(' '));
+            prezime1 = k3.Substring(k3.IndexOf(' ') + 1);
+            cmd.Connection = con;
+            cmd.CommandText = string.Format("Select AUTOR.Ime, Count(AUTOR_IZDANJE.AutorID) As Broj FROM AUTOR, AUTOR_IZDANJE Where AUTOR.AutorID=AUTOR_IZDANJE.AutorID And AUTOR.Ime='{0}' And AUTOR.Prezime='{1}' Group By AUTOR.Ime", ime1, prezime1);
+            try
+            {
+                con.Open();
+                Da.SelectCommand = cmd;
+                Da.Fill(dt3);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                cmd.Dispose();
+                con.Close();
+            }
+            dt1.Merge(dt2);
+            dt1.Merge(dt3);
+            chart1.DataSource = dt1;
+            chart1.Series["Broj knjiga"].XValueMember = "Ime";
+            chart1.Series["Broj knjiga"].YValueMembers = "Broj";
+  
+            chart1.DataBind();
+        }
+    }
+    }
+
